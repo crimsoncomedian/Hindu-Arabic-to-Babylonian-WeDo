@@ -1,0 +1,3417 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Hindu-Arabic to Babylonian · WeDo</title>
+
+  <style>
+    :root {
+      --page-bg: #f4f7fb;
+      --card: #ffffff;
+      --panel: #f8fafc;
+
+      --text: #172033;
+      --muted: #667085;
+
+      --border: #dbe2ea;
+      --border-dark: #cbd5e1;
+
+      --blue: #2563eb;
+      --blue-dark: #1d4ed8;
+      --blue-soft: #eff6ff;
+
+      --green: #166534;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+
+      --red: #991b1b;
+      --red-bg: #fff7f7;
+      --red-border: #fecaca;
+
+      --shadow:
+        0 1px 2px rgba(16, 24, 40, 0.04),
+        0 4px 14px rgba(16, 24, 40, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--page-bg);
+      color: var(--text);
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1050px, calc(100% - 28px));
+      margin: 28px auto;
+    }
+
+    .card {
+      padding: 22px;
+
+      background: var(--card);
+
+      border: 1px solid var(--border);
+      border-radius: 18px;
+
+      box-shadow: var(--shadow);
+    }
+
+    /* ==================================================
+       PROMPT
+       ================================================== */
+
+    .prompt {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .number {
+      margin: 16px 0 5px;
+
+      text-align: center;
+
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .subprompt {
+      text-align: center;
+
+      color: var(--muted);
+
+      font-size: 0.84rem;
+    }
+
+    /* ==================================================
+       PROCESS
+       ================================================== */
+
+    .process {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      gap: 7px;
+      flex-wrap: wrap;
+
+      margin: 18px 0 14px;
+    }
+
+    .process-step {
+      padding: 7px 10px;
+
+      border: 1px solid var(--border);
+      border-radius: 9px;
+
+      background: var(--card);
+      color: var(--muted);
+
+      font-size: 0.8rem;
+      font-weight: 750;
+    }
+
+    .process-step.current {
+      background: var(--blue-soft);
+
+      border-color: var(--blue);
+
+      color: var(--text);
+    }
+
+    .process-step.done {
+      color: var(--text);
+    }
+
+    .process-arrow {
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    /* ==================================================
+       PHASE
+       ================================================== */
+
+    .phase {
+      margin-bottom: 14px;
+
+      padding: 11px 13px;
+
+      border-radius: 10px;
+
+      background: var(--panel);
+
+      text-align: center;
+
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    /* ==================================================
+       TABLE
+       ================================================== */
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    .conversion-table {
+      width: 100%;
+      min-width: 650px;
+
+      table-layout: fixed;
+
+      border-collapse: separate;
+      border-spacing: 0;
+
+      border: 1px solid var(--border);
+      border-radius: 12px;
+
+      overflow: hidden;
+
+      background: var(--card);
+    }
+
+    .conversion-table td {
+      padding: 12px 9px;
+
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .conversion-table td:last-child {
+      border-right: none;
+    }
+
+    .conversion-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .row-label {
+      width: 155px;
+
+      background: var(--panel);
+      color: var(--muted);
+
+      font-size: 0.74rem;
+      font-weight: 800;
+
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .active-cell {
+      background: var(--blue-soft);
+
+      box-shadow:
+        inset 0 0 0 2px var(--blue);
+    }
+
+    .cell-value {
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+
+    .empty-cell {
+      color: var(--muted);
+    }
+
+    .cell-input {
+      width: 100%;
+      max-width: 125px;
+      min-height: 42px;
+
+      padding: 6px 8px;
+
+      border: 1.5px solid var(--border-dark);
+      border-radius: 8px;
+
+      background: var(--card);
+      color: var(--text);
+
+      text-align: center;
+
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .cell-input:focus {
+      outline: none;
+
+      border-color: var(--blue);
+
+      box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    svg {
+      display: block;
+      overflow: visible;
+      margin: auto;
+    }
+
+    /* ==================================================
+       WORK AREA
+       ================================================== */
+
+    .work-card {
+      margin-top: 14px;
+
+      border: 1px solid var(--border);
+      border-radius: 12px;
+
+      overflow: hidden;
+    }
+
+    .work-heading {
+      padding: 10px 13px;
+
+      background: var(--panel);
+      color: var(--muted);
+
+      font-size: 0.78rem;
+      font-weight: 800;
+
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .work-body {
+      padding: 14px;
+    }
+
+    .question {
+      font-size: 1.04rem;
+      font-weight: 750;
+      line-height: 1.45;
+    }
+
+    .help {
+      margin-top: 5px;
+
+      color: var(--muted);
+
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      gap: 8px;
+      flex-wrap: wrap;
+
+      margin-top: 11px;
+    }
+
+    /* ==================================================
+       BUTTONS
+       ================================================== */
+
+    .button {
+      min-height: 42px;
+
+      padding: 8px 14px;
+
+      border-radius: 9px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    .primary {
+      border: 1px solid var(--blue);
+
+      background: var(--blue);
+      color: white;
+    }
+
+    .primary:hover:not(:disabled) {
+      background: var(--blue-dark);
+    }
+
+    .secondary {
+      border: 1px solid var(--border);
+
+      background: var(--card);
+      color: var(--text);
+    }
+
+    .secondary:hover:not(:disabled) {
+      background: var(--panel);
+    }
+
+    .button:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    /* ==================================================
+       FEEDBACK
+       ================================================== */
+
+    .feedback {
+      margin-top: 9px;
+
+      text-align: center;
+
+      font-size: 0.84rem;
+      line-height: 1.4;
+    }
+
+    .feedback.correct {
+      color: var(--green);
+    }
+
+    .feedback.incorrect {
+      color: var(--red);
+    }
+
+    .remainder-box {
+      margin-top: 12px;
+
+      padding: 11px;
+
+      border-radius: 9px;
+
+      background: var(--panel);
+
+      text-align: center;
+
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    /* ==================================================
+       SYMBOL BUILDER
+       ================================================== */
+
+    .builder {
+      margin-top: 10px;
+      padding: 12px;
+
+      border: 1px solid var(--border);
+      border-radius: 10px;
+
+      background: var(--panel);
+    }
+
+    .symbol-buttons {
+      display: flex;
+      justify-content: center;
+
+      gap: 9px;
+      flex-wrap: wrap;
+    }
+
+    .symbol-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      gap: 7px;
+
+      min-width: 105px;
+      min-height: 58px;
+
+      padding: 6px 10px;
+
+      border: 1px solid var(--border);
+      border-radius: 9px;
+
+      background: var(--card);
+      color: var(--text);
+
+      font-weight: 750;
+
+      cursor: pointer;
+    }
+
+    .symbol-actions {
+      display: flex;
+      justify-content: center;
+
+      gap: 8px;
+      flex-wrap: wrap;
+
+      margin-top: 9px;
+    }
+
+    /* ==================================================
+       COMPLETE
+       ================================================== */
+
+    .final {
+      margin-top: 14px;
+
+      padding: 16px;
+
+      border: 1px solid var(--border);
+      border-radius: 11px;
+
+      background: var(--blue-soft);
+
+      text-align: center;
+    }
+
+    .final-number {
+      margin: 4px 0 10px;
+
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+
+    /* ==================================================
+       NAVIGATION
+       ================================================== */
+
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+
+      gap: 10px;
+      flex-wrap: wrap;
+
+      margin-top: 14px;
+    }
+
+    /* ==================================================
+       RESPONSIVE
+       ================================================== */
+
+    @media (max-width: 560px) {
+
+      .app {
+        width: min(100% - 18px, 1050px);
+        margin: 18px auto;
+      }
+
+      .card {
+        padding: 15px 12px;
+      }
+
+      .number {
+        font-size: 2.5rem;
+      }
+
+      .row-label {
+        width: 120px;
+      }
+
+      .conversion-table {
+        min-width: 560px;
+      }
+
+      .navigation {
+        justify-content: center;
+      }
+
+      .process-arrow {
+        display: none;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+<main class="app">
+
+  <section class="card">
+
+    <div class="prompt">
+      Write this Hindu-Arabic numeral as a Babylonian numeral.
+    </div>
+
+    <div
+      id="problemNumber"
+      class="number">
+      487
+    </div>
+
+    <div class="subprompt">
+      Work from the largest base-60 place on the left to the smallest on the right.
+    </div>
+
+
+    <!-- PROCESS -->
+
+    <div
+      id="processBar"
+      class="process">
+    </div>
+
+
+    <div
+      id="phaseBox"
+      class="phase">
+    </div>
+
+
+    <!-- TABLE -->
+
+    <div class="table-wrap">
+
+      <table class="conversion-table">
+
+        <tbody id="conversionTable"></tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- WORK -->
+
+    <div id="workArea"></div>
+
+
+    <!-- NAV -->
+
+    <div class="navigation">
+
+      <button
+        id="backButton"
+        class="button secondary"
+        type="button">
+        ← Back
+      </button>
+
+      <button
+        id="nextButton"
+        class="button secondary"
+        type="button">
+        Next →
+      </button>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<script>
+
+(() => {
+
+  /*
+    ==================================================
+    DOM
+    ==================================================
+  */
+
+  const problemNumber =
+    document.getElementById(
+      "problemNumber"
+    );
+
+
+  const processBar =
+    document.getElementById(
+      "processBar"
+    );
+
+
+  const phaseBox =
+    document.getElementById(
+      "phaseBox"
+    );
+
+
+  const conversionTable =
+    document.getElementById(
+      "conversionTable"
+    );
+
+
+  const workArea =
+    document.getElementById(
+      "workArea"
+    );
+
+
+  const backButton =
+    document.getElementById(
+      "backButton"
+    );
+
+
+  const nextButton =
+    document.getElementById(
+      "nextButton"
+    );
+
+
+  /*
+    ==================================================
+    STATE
+    ==================================================
+  */
+
+  let targetNumber =
+    1;
+
+
+  let digits =
+    [1];
+
+
+  let columns =
+    [];
+
+
+  let steps =
+    [];
+
+
+  let currentStepIndex =
+    0;
+
+
+  let highestCompletedIndex =
+    -1;
+
+
+  let previousNumber =
+    null;
+
+
+  let buildValues =
+    [];
+
+
+  let buildHistory =
+    [];
+
+
+  /*
+    ==================================================
+    BABYLONIAN SYMBOLS
+    ==================================================
+  */
+
+  function drawOne(
+    x,
+    y,
+    scale = 1
+  ) {
+
+    return `
+      <g
+        transform="
+          translate(${x} ${y})
+          scale(${scale})
+        ">
+
+        <path
+          d="
+            M0 0
+            L16 0
+            L11 7
+            L9 26
+            L7 26
+            L5 7
+            Z
+          "
+          fill="currentColor">
+        </path>
+
+        <path
+          d="
+            M5 7
+            L11 7
+            L8 12
+            Z
+          "
+          fill="white">
+        </path>
+
+      </g>
+    `;
+
+  }
+
+
+  function drawTen(
+    x,
+    y,
+    scale = 1
+  ) {
+
+    return `
+      <g
+        transform="
+          translate(${x} ${y})
+          scale(${scale})
+        ">
+
+        <path
+          d="
+            M0 10
+            L17 0
+            L12 9
+            L17 19
+            Z
+          "
+          fill="currentColor">
+        </path>
+
+        <path
+          d="
+            M4 10
+            L12 5
+            L9 10
+            L12 15
+            Z
+          "
+          fill="white">
+        </path>
+
+      </g>
+    `;
+
+  }
+
+
+  /*
+    ==================================================
+    SYMBOL LAYOUT
+    ==================================================
+  */
+
+  function getPositions(
+    count,
+    type
+  ) {
+
+    const positions =
+      [];
+
+
+    const columnGap =
+      type === "ten"
+        ? 22
+        : 18;
+
+
+    const rowGap =
+      type === "ten"
+        ? 22
+        : 29;
+
+
+    let remaining =
+      count;
+
+
+    let row =
+      0;
+
+
+    while (
+      remaining >
+      0
+    ) {
+
+      const inRow =
+        Math.min(
+          3,
+          remaining
+        );
+
+
+      const width =
+        (
+          inRow -
+          1
+        ) *
+        columnGap;
+
+
+      const startX =
+        -width /
+        2;
+
+
+      for (
+        let column = 0;
+        column < inRow;
+        column++
+      ) {
+
+        positions.push({
+
+          x:
+            startX +
+            column *
+            columnGap,
+
+          y:
+            row *
+            rowGap
+
+        });
+
+      }
+
+
+      remaining -=
+        inRow;
+
+
+      row++;
+
+    }
+
+
+    return positions;
+
+  }
+
+
+  function createSymbolGroup(
+    count,
+    type
+  ) {
+
+    if (
+      count <=
+      0
+    ) {
+
+      return "";
+
+    }
+
+
+    const positions =
+      getPositions(
+        count,
+        type
+      );
+
+
+    const rows =
+      Math.ceil(
+        count /
+        3
+      );
+
+
+    const width =
+      type === "ten"
+        ? 78
+        : 66;
+
+
+    const height =
+      type === "ten"
+
+        ? Math.max(
+            24,
+            rows *
+              22 +
+              10
+          )
+
+        : Math.max(
+            32,
+            rows *
+              29 +
+              8
+          );
+
+
+    const center =
+      width /
+      2;
+
+
+    let marks =
+      "";
+
+
+    positions.forEach(
+      position => {
+
+        marks +=
+          type === "one"
+
+            ? drawOne(
+                center +
+                  position.x -
+                  8,
+
+                4 +
+                  position.y,
+
+                0.9
+              )
+
+            : drawTen(
+                center +
+                  position.x -
+                  8,
+
+                4 +
+                  position.y,
+
+                0.9
+              );
+
+      }
+    );
+
+
+    return `
+      <svg
+        width="${width}"
+        height="${height}"
+        viewBox="0 0 ${width} ${height}"
+        style="color: var(--text)"
+        aria-hidden="true">
+
+        ${marks}
+
+      </svg>
+    `;
+
+  }
+
+
+  function renderDigit(
+    value
+  ) {
+
+    if (
+      value <=
+      0
+    ) {
+
+      return `
+        <span class="empty-cell">
+          —
+        </span>
+      `;
+
+    }
+
+
+    const tens =
+      Math.floor(
+        value /
+        10
+      );
+
+
+    const ones =
+      value %
+      10;
+
+
+    return `
+      <div
+        style="
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:2px;
+        ">
+
+        ${
+          tens
+
+            ? createSymbolGroup(
+                tens,
+                "ten"
+              )
+
+            : ""
+        }
+
+        ${
+          ones
+
+            ? createSymbolGroup(
+                ones,
+                "one"
+              )
+
+            : ""
+        }
+
+      </div>
+    `;
+
+  }
+
+
+  /*
+    ==================================================
+    BASE 60
+    ==================================================
+  */
+
+  function toBase60(
+    value
+  ) {
+
+    const result =
+      [];
+
+
+    let number =
+      value;
+
+
+    while (
+      number >
+      0
+    ) {
+
+      result.unshift(
+        number %
+        60
+      );
+
+
+      number =
+        Math.floor(
+          number /
+          60
+        );
+
+    }
+
+
+    return result.length
+      ? result
+      : [0];
+
+  }
+
+
+  /*
+    ==================================================
+    RANDOM NUMBERS
+    ==================================================
+  */
+
+  function weightedRandomNumber() {
+
+    const random =
+      Math.random();
+
+
+    if (
+      random <
+      0.80
+    ) {
+
+      return (
+        1 +
+        Math.floor(
+          Math.random() *
+          999
+        )
+      );
+
+    }
+
+
+    if (
+      random <
+      0.96
+    ) {
+
+      return (
+        1000 +
+        Math.floor(
+          Math.random() *
+          2600
+        )
+      );
+
+    }
+
+
+    return (
+      3600 +
+      Math.floor(
+        Math.random() *
+        6401
+      )
+    );
+
+  }
+
+
+  /*
+    ==================================================
+    GENERATE PROBLEM
+    ==================================================
+  */
+
+  function generateProblem() {
+
+    let number;
+
+    let base60Digits;
+
+
+    do {
+
+      number =
+        weightedRandomNumber();
+
+
+      if (
+        number >
+        10000
+      ) {
+
+        number =
+          10000;
+
+      }
+
+
+      base60Digits =
+        toBase60(
+          number
+        );
+
+    }
+
+    while (
+
+      base60Digits.some(
+        digit =>
+          digit ===
+          0
+      )
+
+      ||
+
+      number ===
+        previousNumber
+
+    );
+
+
+    targetNumber =
+      number;
+
+
+    previousNumber =
+      number;
+
+
+    digits =
+      base60Digits;
+
+
+    let remainder =
+      number;
+
+
+    columns =
+      digits.map(
+        (
+          digit,
+          index
+        ) => {
+
+          const power =
+            digits.length -
+            1 -
+            index;
+
+
+          const placeValue =
+            Math.pow(
+              60,
+              power
+            );
+
+
+          const start =
+            remainder;
+
+
+          const amountUsed =
+            digit *
+            placeValue;
+
+
+          remainder =
+            start -
+            amountUsed;
+
+
+          return {
+
+            placeValue:
+              placeValue,
+
+            groups:
+              digit,
+
+            start:
+              start,
+
+            amountUsed:
+              amountUsed,
+
+            remainder:
+              remainder,
+
+            placeDone:
+              false,
+
+            groupsDone:
+              false,
+
+            buildDone:
+              false
+
+          };
+
+        }
+      );
+
+
+    buildValues =
+      columns.map(
+        () =>
+          0
+      );
+
+
+    buildHistory =
+      columns.map(
+        () =>
+          []
+      );
+
+  }
+
+
+  /*
+    ==================================================
+    STEPS
+    ==================================================
+
+    1. Place Value
+    2. Number of Groups
+    3. Build the Numeral
+
+    ==================================================
+  */
+
+  function buildSteps() {
+
+    steps =
+      [];
+
+
+    steps.push({
+
+      type:
+        "places",
+
+      completed:
+        false,
+
+      skipped:
+        false
+
+    });
+
+
+    columns.forEach(
+      (
+        column,
+        index
+      ) => {
+
+        steps.push({
+
+          type:
+            "groups",
+
+          column:
+            index,
+
+          answer:
+            String(
+              column.groups
+            ),
+
+          completed:
+            false,
+
+          skipped:
+            false
+
+        });
+
+
+        /*
+          Don't ask for a remainder
+          after the smallest place.
+        */
+
+        if (
+          index <
+          columns.length -
+          1
+        ) {
+
+          steps.push({
+
+            type:
+              "remainder",
+
+            column:
+              index,
+
+            answer:
+              String(
+                column.remainder
+              ),
+
+            completed:
+              false,
+
+            skipped:
+              false
+
+          });
+
+        }
+
+      }
+    );
+
+
+    columns.forEach(
+      (
+        column,
+        index
+      ) => {
+
+        steps.push({
+
+          type:
+            "build",
+
+          column:
+            index,
+
+          completed:
+            false,
+
+          skipped:
+            false
+
+        });
+
+      }
+    );
+
+
+    steps.push({
+
+      type:
+        "done",
+
+      completed:
+        false
+
+    });
+
+  }
+
+
+  /*
+    ==================================================
+    PHASE NUMBER
+    ==================================================
+  */
+
+  function getPhaseNumber(
+    step
+  ) {
+
+    if (
+      step.type ===
+      "places"
+    ) {
+
+      return 1;
+
+    }
+
+
+    if (
+      step.type ===
+        "groups" ||
+      step.type ===
+        "remainder"
+    ) {
+
+      return 2;
+
+    }
+
+
+    return 3;
+
+  }
+
+
+  /*
+    ==================================================
+    PROCESS BAR
+    ==================================================
+  */
+
+  function renderProcessBar() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    const currentPhase =
+      getPhaseNumber(
+        step
+      );
+
+
+    const names =
+      [
+        "Place Values",
+        "Number of Groups",
+        "Build the Numeral"
+      ];
+
+
+    processBar.innerHTML =
+      names
+        .map(
+          (
+            name,
+            index
+          ) => {
+
+            const number =
+              index +
+              1;
+
+
+            let state =
+              "";
+
+
+            if (
+              number ===
+              currentPhase
+            ) {
+
+              state =
+                "current";
+
+            }
+
+            else if (
+              number <
+              currentPhase
+            ) {
+
+              state =
+                "done";
+
+            }
+
+
+            return `
+              ${
+                index
+                  ? '<span class="process-arrow">→</span>'
+                  : ""
+              }
+
+              <span
+                class="process-step ${state}">
+
+                ${number}.
+                ${name}
+
+              </span>
+            `;
+
+          }
+        )
+        .join("");
+
+  }
+
+
+  /*
+    ==================================================
+    COMPLETE STEP
+    ==================================================
+  */
+
+  function completeStep(
+    step,
+    skipped
+  ) {
+
+    step.completed =
+      true;
+
+
+    step.skipped =
+      skipped;
+
+
+    highestCompletedIndex =
+      Math.max(
+        highestCompletedIndex,
+        currentStepIndex
+      );
+
+
+    if (
+      step.type ===
+      "places"
+    ) {
+
+      columns.forEach(
+        column => {
+
+          column.placeDone =
+            true;
+
+        }
+      );
+
+    }
+
+
+    if (
+      step.type ===
+      "groups"
+    ) {
+
+      columns[
+        step.column
+      ].groupsDone =
+        true;
+
+    }
+
+
+    if (
+      step.type ===
+      "build"
+    ) {
+
+      columns[
+        step.column
+      ].buildDone =
+        true;
+
+
+      buildValues[
+        step.column
+      ] =
+        columns[
+          step.column
+        ].groups;
+
+    }
+
+
+    render();
+
+  }
+
+
+  /*
+    ==================================================
+    TABLE
+    ==================================================
+  */
+
+  function renderTable() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    /*
+      -------------------------------
+      PLACE VALUE ROW
+      -------------------------------
+    */
+
+    let placeRow =
+      `
+        <tr>
+
+          <td class="row-label">
+            1. Place Value
+          </td>
+      `;
+
+
+    columns.forEach(
+      (
+        column,
+        index
+      ) => {
+
+        if (
+          step.type ===
+            "places" &&
+          !step.completed
+        ) {
+
+          placeRow +=
+            `
+              <td class="active-cell">
+
+                <input
+                  class="cell-input place-input"
+                  data-index="${index}"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off">
+
+              </td>
+            `;
+
+        }
+
+        else {
+
+          placeRow +=
+            `
+              <td>
+
+                ${
+                  column.placeDone
+
+                    ? `
+                        <span class="cell-value">
+
+                          ${column.placeValue.toLocaleString(
+                            "en-US"
+                          )}
+
+                        </span>
+                      `
+
+                    : `
+                        <span class="empty-cell">
+                          —
+                        </span>
+                      `
+                }
+
+              </td>
+            `;
+
+        }
+
+      }
+    );
+
+
+    placeRow +=
+      "</tr>";
+
+
+    /*
+      -------------------------------
+      NUMBER OF GROUPS ROW
+      -------------------------------
+    */
+
+    let groupsRow =
+      `
+        <tr>
+
+          <td class="row-label">
+            2. Number of Groups
+          </td>
+      `;
+
+
+    columns.forEach(
+      (
+        column,
+        index
+      ) => {
+
+        const active =
+          step.type ===
+            "groups" &&
+          step.column ===
+            index;
+
+
+        if (
+          active &&
+          !step.completed
+        ) {
+
+          groupsRow +=
+            `
+              <td class="active-cell">
+
+                <input
+                  id="activeCellInput"
+                  class="cell-input"
+                  type="text"
+                  inputmode="numeric"
+                  autocomplete="off">
+
+              </td>
+            `;
+
+        }
+
+        else {
+
+          groupsRow +=
+            `
+              <td>
+
+                ${
+                  column.groupsDone
+
+                    ? `
+                        <span class="cell-value">
+                          ${column.groups}
+                        </span>
+                      `
+
+                    : `
+                        <span class="empty-cell">
+                          —
+                        </span>
+                      `
+                }
+
+              </td>
+            `;
+
+        }
+
+      }
+    );
+
+
+    groupsRow +=
+      "</tr>";
+
+
+    /*
+      -------------------------------
+      BABYLONIAN SYMBOL ROW
+      -------------------------------
+    */
+
+    let symbolRow =
+      `
+        <tr>
+
+          <td class="row-label">
+            3. Babylonian Symbols
+          </td>
+      `;
+
+
+    columns.forEach(
+      (
+        column,
+        index
+      ) => {
+
+        const active =
+          step.type ===
+            "build" &&
+          step.column ===
+            index;
+
+
+        if (
+          active &&
+          !step.completed
+        ) {
+
+          symbolRow +=
+            `
+              <td class="active-cell">
+
+                ${renderDigit(
+                  buildValues[
+                    index
+                  ]
+                )}
+
+              </td>
+            `;
+
+        }
+
+        else {
+
+          symbolRow +=
+            `
+              <td>
+
+                ${
+                  column.buildDone
+
+                    ? renderDigit(
+                        column.groups
+                      )
+
+                    : `
+                        <span class="empty-cell">
+                          —
+                        </span>
+                      `
+                }
+
+              </td>
+            `;
+
+        }
+
+      }
+    );
+
+
+    symbolRow +=
+      "</tr>";
+
+
+    conversionTable.innerHTML =
+      placeRow +
+      groupsRow +
+      symbolRow;
+
+  }
+
+
+  /*
+    ==================================================
+    WORK AREA
+    ==================================================
+  */
+
+  function renderWorkArea() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    /*
+      ======================================
+      STEP 1
+      PLACE VALUES
+      ======================================
+    */
+
+    if (
+      step.type ===
+      "places"
+    ) {
+
+      phaseBox.innerHTML =
+        `
+          <strong>
+            Step 1:
+          </strong>
+
+          Fill in the base-60 place values
+          from largest on the left to
+          smallest on the right.
+        `;
+
+
+      if (
+        step.completed
+      ) {
+
+        workArea.innerHTML =
+          `
+            <div class="work-card">
+
+              <div class="work-heading">
+                Step 1 · Place Values
+              </div>
+
+              <div class="work-body">
+
+                <div class="feedback correct">
+
+                  ${
+                    step.skipped
+                      ? "Revealed:"
+                      : "✓ Correct."
+                  }
+
+                  ${columns
+                    .map(
+                      column =>
+                        column.placeValue
+                          .toLocaleString(
+                            "en-US"
+                          )
+                    )
+                    .join(", ")}
+
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+      }
+
+      else {
+
+        workArea.innerHTML =
+          `
+            <div class="work-card">
+
+              <div class="work-heading">
+                Step 1 · Place Values
+              </div>
+
+              <div class="work-body">
+
+                <div class="question">
+                  Fill in every box in the Place Value row.
+                </div>
+
+                <div class="help">
+
+                  The smallest place is
+                  <strong>1</strong>.
+
+                  Each place to the left
+                  is <strong>60 times larger</strong>.
+
+                </div>
+
+                <div class="actions">
+
+                  <button
+                    id="checkPlacesButton"
+                    class="button primary"
+                    type="button">
+                    Check Place Values
+                  </button>
+
+                  <button
+                    id="skipButton"
+                    class="button secondary"
+                    type="button">
+                    Skip
+                  </button>
+
+                </div>
+
+                <div
+                  id="feedbackMessage"
+                  class="feedback">
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+      }
+
+
+      return;
+
+    }
+
+
+    /*
+      ======================================
+      STEP 2
+      NUMBER OF GROUPS
+      ======================================
+    */
+
+    if (
+      step.type ===
+      "groups"
+    ) {
+
+      const column =
+        columns[
+          step.column
+        ];
+
+
+      phaseBox.innerHTML =
+        `
+          <strong>
+            Step 2:
+          </strong>
+
+          Find the number of groups for
+          each place, starting with the
+          largest place.
+        `;
+
+
+      const question =
+        `
+          How many groups of
+
+          <strong>
+            ${column.placeValue.toLocaleString(
+              "en-US"
+            )}
+          </strong>
+
+          fit into
+
+          <strong>
+            ${column.start.toLocaleString(
+              "en-US"
+            )}
+          </strong>?
+        `;
+
+
+      if (
+        step.completed
+      ) {
+
+        workArea.innerHTML =
+          `
+            <div class="work-card">
+
+              <div class="work-heading">
+                Step 2 · Number of Groups
+              </div>
+
+              <div class="work-body">
+
+                <div class="question">
+                  ${question}
+                </div>
+
+                <div class="feedback correct">
+
+                  ${
+                    step.skipped
+                      ? "Revealed:"
+                      : "✓ Correct."
+                  }
+
+                  <strong>
+                    ${column.groups}
+                  </strong>
+
+                </div>
+
+                ${
+                  step.column <
+                    columns.length -
+                    1
+
+                    ? `
+                        <div class="remainder-box">
+
+                          ${column.groups}
+                          ×
+                          ${column.placeValue.toLocaleString(
+                            "en-US"
+                          )}
+
+                          =
+
+                          ${column.amountUsed.toLocaleString(
+                            "en-US"
+                          )}
+
+                        </div>
+                      `
+
+                    : ""
+                }
+
+              </div>
+
+            </div>
+          `;
+
+      }
+
+      else {
+
+        workArea.innerHTML =
+          `
+            <div class="work-card">
+
+              <div class="work-heading">
+                Step 2 · Number of Groups
+              </div>
+
+              <div class="work-body">
+
+                <div class="question">
+                  ${question}
+                </div>
+
+                <div class="help">
+
+                  Enter the number of groups
+                  directly in the highlighted
+                  table cell.
+
+                </div>
+
+                <div class="actions">
+
+                  <button
+                    id="checkButton"
+                    class="button primary"
+                    type="button">
+                    Check
+                  </button>
+
+                  <button
+                    id="skipButton"
+                    class="button secondary"
+                    type="button">
+                    Skip
+                  </button>
+
+                </div>
+
+                <div
+                  id="feedbackMessage"
+                  class="feedback">
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+      }
+
+
+      return;
+
+    }
+
+
+    /*
+      ======================================
+      STEP 2
+      REMAINDER
+      ======================================
+    */
+
+    if (
+      step.type ===
+      "remainder"
+    ) {
+
+      const column =
+        columns[
+          step.column
+        ];
+
+
+      phaseBox.innerHTML =
+        `
+          <strong>
+            Step 2:
+          </strong>
+
+          After finding the number of groups,
+          determine how much is left for
+          the next place.
+        `;
+
+
+      const question =
+        `
+          If you take
+
+          <strong>
+            ${column.groups}
+          </strong>
+
+          groups of
+
+          <strong>
+            ${column.placeValue.toLocaleString(
+              "en-US"
+            )}
+          </strong>
+
+          away from
+
+          <strong>
+            ${column.start.toLocaleString(
+              "en-US"
+            )}
+          </strong>,
+
+          how much is left?
+        `;
+
+
+      if (
+        step.completed
+      ) {
+
+        workArea.innerHTML =
+          `
+            <div class="work-card">
+
+              <div class="work-heading">
+                Amount Left
+              </div>
+
+              <div class="work-body">
+
+                <div class="question">
+                  ${question}
+                </div>
+
+                <div class="feedback correct">
+
+                  ${
+                    step.skipped
+                      ? "Revealed:"
+                      : "✓ Correct."
+                  }
+
+                  <strong>
+
+                    ${column.remainder.toLocaleString(
+                      "en-US"
+                    )}
+
+                  </strong>
+
+                </div>
+
+
+                <div class="remainder-box">
+
+                  ${column.groups}
+
+                  ×
+
+                  ${column.placeValue.toLocaleString(
+                    "en-US"
+                  )}
+
+                  =
+
+                  ${column.amountUsed.toLocaleString(
+                    "en-US"
+                  )}
+
+                  <br>
+
+                  ${column.start.toLocaleString(
+                    "en-US"
+                  )}
+
+                  −
+
+                  ${column.amountUsed.toLocaleString(
+                    "en-US"
+                  )}
+
+                  =
+
+                  ${column.remainder.toLocaleString(
+                    "en-US"
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+      }
+
+      else {
+
+        workArea.innerHTML =
+          `
+            <div class="work-card">
+
+              <div class="work-heading">
+                Amount Left
+              </div>
+
+              <div class="work-body">
+
+                <div class="question">
+                  ${question}
+                </div>
+
+                <div class="actions">
+
+                  <input
+                    id="workInput"
+                    class="cell-input"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="off">
+
+                  <button
+                    id="checkButton"
+                    class="button primary"
+                    type="button">
+                    Check
+                  </button>
+
+                  <button
+                    id="skipButton"
+                    class="button secondary"
+                    type="button">
+                    Skip
+                  </button>
+
+                </div>
+
+                <div
+                  id="feedbackMessage"
+                  class="feedback">
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+      }
+
+
+      return;
+
+    }
+
+
+    /*
+      ======================================
+      STEP 3
+      BUILD SYMBOLS
+      ======================================
+    */
+
+    if (
+      step.type ===
+      "build"
+    ) {
+
+      const columnIndex =
+        step.column;
+
+
+      const column =
+        columns[
+          columnIndex
+        ];
+
+
+      phaseBox.innerHTML =
+        `
+          <strong>
+            Step 3:
+          </strong>
+
+          Build the Babylonian symbols for
+          each number of groups.
+        `;
+
+
+      if (
+        step.completed
+      ) {
+
+        workArea.innerHTML =
+          `
+            <div class="work-card">
+
+              <div class="work-heading">
+                Step 3 · Build the Numeral
+              </div>
+
+              <div class="work-body">
+
+                <div class="question">
+
+                  Build the Babylonian group
+                  for
+
+                  <strong>
+                    ${column.groups}
+                  </strong>
+
+                  groups.
+
+                </div>
+
+                <div class="feedback correct">
+
+                  ${
+                    step.skipped
+                      ? "Revealed."
+                      : "✓ Correct."
+                  }
+
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+      }
+
+      else {
+
+        workArea.innerHTML =
+          `
+            <div class="work-card">
+
+              <div class="work-heading">
+                Step 3 · Build the Numeral
+              </div>
+
+              <div class="work-body">
+
+                <div class="question">
+
+                  Build the Babylonian group
+                  for
+
+                  <strong>
+                    ${column.groups}
+                  </strong>
+
+                  groups.
+
+                </div>
+
+
+                <div class="builder">
+
+                  <div class="symbol-buttons">
+
+                    <button
+                      id="addTenButton"
+                      class="symbol-button"
+                      type="button">
+
+                      <span id="tenSymbol"></span>
+
+                      <span>
+                        + 10
+                      </span>
+
+                    </button>
+
+
+                    <button
+                      id="addOneButton"
+                      class="symbol-button"
+                      type="button">
+
+                      <span id="oneSymbol"></span>
+
+                      <span>
+                        + 1
+                      </span>
+
+                    </button>
+
+                  </div>
+
+
+                  <div class="symbol-actions">
+
+                    <button
+                      id="undoButton"
+                      class="button secondary"
+                      type="button">
+                      Undo
+                    </button>
+
+                    <button
+                      id="clearButton"
+                      class="button secondary"
+                      type="button">
+                      Clear
+                    </button>
+
+                    <button
+                      id="checkBuildButton"
+                      class="button primary"
+                      type="button">
+                      Check
+                    </button>
+
+                    <button
+                      id="skipButton"
+                      class="button secondary"
+                      type="button">
+                      Skip
+                    </button>
+
+                  </div>
+
+
+                  <div
+                    id="feedbackMessage"
+                    class="feedback">
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          `;
+
+      }
+
+
+      return;
+
+    }
+
+
+    /*
+      ======================================
+      COMPLETE
+      ======================================
+    */
+
+    phaseBox.innerHTML =
+      `
+        <strong>
+          Complete:
+        </strong>
+
+        Read the Babylonian symbol groups
+        from left to right.
+      `;
+
+
+    workArea.innerHTML =
+      `
+        <div class="final">
+
+          <div>
+            Completed Babylonian Numeral
+          </div>
+
+          <div class="final-number">
+
+            ${targetNumber.toLocaleString(
+              "en-US"
+            )}
+
+          </div>
+
+          <button
+            id="anotherButton"
+            class="button primary"
+            type="button">
+            Try Another Problem
+          </button>
+
+        </div>
+      `;
+
+  }
+
+
+  /*
+    ==================================================
+    EVENT HANDLERS
+    ==================================================
+  */
+
+  function attachEvents() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    const feedback =
+      document.getElementById(
+        "feedbackMessage"
+      );
+
+
+    const skipButton =
+      document.getElementById(
+        "skipButton"
+      );
+
+
+    const checkButton =
+      document.getElementById(
+        "checkButton"
+      );
+
+
+    const activeCellInput =
+      document.getElementById(
+        "activeCellInput"
+      );
+
+
+    const workInput =
+      document.getElementById(
+        "workInput"
+      );
+
+
+    const checkPlacesButton =
+      document.getElementById(
+        "checkPlacesButton"
+      );
+
+
+    const anotherButton =
+      document.getElementById(
+        "anotherButton"
+      );
+
+
+    /*
+      --------------------------------
+      PLACE VALUES
+      --------------------------------
+    */
+
+    if (
+      checkPlacesButton
+    ) {
+
+      const inputs =
+        [
+          ...document.querySelectorAll(
+            ".place-input"
+          )
+        ];
+
+
+      checkPlacesButton.addEventListener(
+        "click",
+
+        function () {
+
+          const answers =
+            inputs.map(
+              input =>
+                input.value
+                  .trim()
+                  .replace(
+                    /^0+(?=\d)/,
+                    ""
+                  )
+            );
+
+
+          if (
+            answers.some(
+              answer =>
+                answer ===
+                ""
+            )
+          ) {
+
+            feedback.className =
+              "feedback incorrect";
+
+
+            feedback.textContent =
+              "Fill in all of the place values before checking.";
+
+
+            return;
+
+          }
+
+
+          const correct =
+            answers.every(
+              (
+                answer,
+                index
+              ) =>
+                answer ===
+                String(
+                  columns[
+                    index
+                  ].placeValue
+                )
+            );
+
+
+          if (
+            correct
+          ) {
+
+            completeStep(
+              step,
+              false
+            );
+
+          }
+
+          else {
+
+            feedback.className =
+              "feedback incorrect";
+
+
+            feedback.textContent =
+              "Not quite. Each place is 60 times the place to its right.";
+
+          }
+
+        }
+
+      );
+
+
+      inputs[0]?.focus();
+
+    }
+
+
+    /*
+      --------------------------------
+      NUMBER / REMAINDER CHECK
+      --------------------------------
+    */
+
+    if (
+      checkButton
+    ) {
+
+      const activeInput =
+        activeCellInput ||
+        workInput;
+
+
+      checkButton.addEventListener(
+        "click",
+
+        function () {
+
+          const answer =
+            (
+              activeInput?.value ||
+              ""
+            )
+              .trim()
+              .replace(
+                /^0+(?=\d)/,
+                ""
+              );
+
+
+          if (
+            answer ===
+            ""
+          ) {
+
+            feedback.className =
+              "feedback incorrect";
+
+
+            feedback.textContent =
+              "Enter an answer or choose Skip.";
+
+
+            return;
+
+          }
+
+
+          if (
+            answer ===
+            step.answer
+          ) {
+
+            completeStep(
+              step,
+              false
+            );
+
+          }
+
+          else {
+
+            feedback.className =
+              "feedback incorrect";
+
+
+            feedback.textContent =
+              "Not quite. Try again or skip this step.";
+
+          }
+
+        }
+
+      );
+
+
+      activeInput?.addEventListener(
+        "keydown",
+
+        function (
+          event
+        ) {
+
+          if (
+            event.key ===
+            "Enter"
+          ) {
+
+            event.preventDefault();
+
+            checkButton.click();
+
+          }
+
+        }
+
+      );
+
+
+      activeInput?.focus();
+
+    }
+
+
+    /*
+      --------------------------------
+      BUILD SYMBOLS
+      --------------------------------
+    */
+
+    if (
+      step.type ===
+        "build" &&
+      !step.completed
+    ) {
+
+      const index =
+        step.column;
+
+
+      const addTenButton =
+        document.getElementById(
+          "addTenButton"
+        );
+
+
+      const addOneButton =
+        document.getElementById(
+          "addOneButton"
+        );
+
+
+      const undoButton =
+        document.getElementById(
+          "undoButton"
+        );
+
+
+      const clearButton =
+        document.getElementById(
+          "clearButton"
+        );
+
+
+      const checkBuildButton =
+        document.getElementById(
+          "checkBuildButton"
+        );
+
+
+      document.getElementById(
+        "tenSymbol"
+      ).innerHTML =
+        createSymbolGroup(
+          1,
+          "ten"
+        );
+
+
+      document.getElementById(
+        "oneSymbol"
+      ).innerHTML =
+        createSymbolGroup(
+          1,
+          "one"
+        );
+
+
+      addTenButton.addEventListener(
+        "click",
+
+        function () {
+
+          if (
+            buildValues[
+              index
+            ] +
+              10 <=
+            59
+          ) {
+
+            buildValues[
+              index
+            ] +=
+              10;
+
+
+            buildHistory[
+              index
+            ].push(
+              "ten"
+            );
+
+
+            render();
+
+          }
+
+        }
+
+      );
+
+
+      addOneButton.addEventListener(
+        "click",
+
+        function () {
+
+          if (
+            buildValues[
+              index
+            ] +
+              1 <=
+            59
+          ) {
+
+            buildValues[
+              index
+            ] +=
+              1;
+
+
+            buildHistory[
+              index
+            ].push(
+              "one"
+            );
+
+
+            render();
+
+          }
+
+        }
+
+      );
+
+
+      undoButton.addEventListener(
+        "click",
+
+        function () {
+
+          const last =
+            buildHistory[
+              index
+            ].pop();
+
+
+          if (
+            last ===
+            "ten"
+          ) {
+
+            buildValues[
+              index
+            ] -=
+              10;
+
+          }
+
+
+          if (
+            last ===
+            "one"
+          ) {
+
+            buildValues[
+              index
+            ] -=
+              1;
+
+          }
+
+
+          render();
+
+        }
+
+      );
+
+
+      clearButton.addEventListener(
+        "click",
+
+        function () {
+
+          buildValues[
+            index
+          ] =
+            0;
+
+
+          buildHistory[
+            index
+          ] =
+            [];
+
+
+          render();
+
+        }
+
+      );
+
+
+      checkBuildButton.addEventListener(
+        "click",
+
+        function () {
+
+          if (
+            buildValues[
+              index
+            ] ===
+            columns[
+              index
+            ].groups
+          ) {
+
+            completeStep(
+              step,
+              false
+            );
+
+          }
+
+          else {
+
+            feedback.className =
+              "feedback incorrect";
+
+
+            feedback.textContent =
+              `
+                Not quite. Your symbols currently
+                represent ${buildValues[index]} groups.
+                You need ${columns[index].groups}.
+              `;
+
+          }
+
+        }
+
+      );
+
+    }
+
+
+    /*
+      --------------------------------
+      SKIP
+      --------------------------------
+    */
+
+    if (
+      skipButton
+    ) {
+
+      skipButton.addEventListener(
+        "click",
+
+        function () {
+
+          completeStep(
+            step,
+            true
+          );
+
+        }
+
+      );
+
+    }
+
+
+    /*
+      --------------------------------
+      ANOTHER
+      --------------------------------
+    */
+
+    if (
+      anotherButton
+    ) {
+
+      anotherButton.addEventListener(
+        "click",
+        newProblem
+      );
+
+    }
+
+  }
+
+
+  /*
+    ==================================================
+    NAVIGATION
+    ==================================================
+  */
+
+  function renderNavigation() {
+
+    const step =
+      steps[
+        currentStepIndex
+      ];
+
+
+    backButton.disabled =
+      currentStepIndex ===
+      0;
+
+
+    nextButton.disabled =
+      currentStepIndex ===
+        steps.length -
+        1
+
+      ||
+
+      !(
+        step.completed
+
+        ||
+
+        currentStepIndex <
+          highestCompletedIndex
+      );
+
+  }
+
+
+  backButton.addEventListener(
+    "click",
+
+    function () {
+
+      if (
+        currentStepIndex >
+        0
+      ) {
+
+        currentStepIndex--;
+
+        render();
+
+      }
+
+    }
+
+  );
+
+
+  nextButton.addEventListener(
+    "click",
+
+    function () {
+
+      const step =
+        steps[
+          currentStepIndex
+        ];
+
+
+      if (
+
+        currentStepIndex <
+          steps.length -
+          1
+
+        &&
+
+        (
+          step.completed
+
+          ||
+
+          currentStepIndex <
+            highestCompletedIndex
+        )
+
+      ) {
+
+        currentStepIndex++;
+
+        render();
+
+      }
+
+    }
+
+  );
+
+
+  /*
+    ==================================================
+    RENDER
+    ==================================================
+  */
+
+  function render() {
+
+    problemNumber.textContent =
+      targetNumber.toLocaleString(
+        "en-US"
+      );
+
+
+    renderProcessBar();
+
+    renderTable();
+
+    renderWorkArea();
+
+    renderNavigation();
+
+    attachEvents();
+
+  }
+
+
+  /*
+    ==================================================
+    NEW PROBLEM
+    ==================================================
+  */
+
+  function newProblem() {
+
+    generateProblem();
+
+    buildSteps();
+
+
+    currentStepIndex =
+      0;
+
+
+    highestCompletedIndex =
+      -1;
+
+
+    render();
+
+  }
+
+
+  /*
+    ==================================================
+    START
+    ==================================================
+  */
+
+  newProblem();
+
+})();
+</script>
+
+</body>
+</html>
